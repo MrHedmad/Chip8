@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+	"chip8-emulator",
+	"chip8-interface"
+]
