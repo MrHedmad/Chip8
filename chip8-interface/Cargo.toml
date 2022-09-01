@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 chip8-emulator = { path = "../chip8-emulator"}
+sdl2 = "^0.34.3"

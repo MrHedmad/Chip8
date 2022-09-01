@@ -1,35 +1,36 @@
-use rand::{Rng, thread_rng, rngs::ThreadRng};
+use rand::random;
 
 // These are taken from Cowgod's CHIP8 specification.
-const INTERPRETER_SPRITES: [[u8; 5]; 16] = [
-    [0xF0, 0x90, 0x90, 0x90, 0xF0], // 0
-    [0x20, 0x60, 0x20, 0x20, 0x70], // 1
-    [0xF0, 0x10, 0xF0, 0x80, 0xF0], // 2
-    [0xF0, 0x10, 0xF0, 0x10, 0xF0], // 3
-    [0x90, 0x90, 0xF0, 0x10, 0x10], // 4
-    [0xF0, 0x80, 0xF0, 0x10, 0xF0], // 5
-    [0xF0, 0x80, 0xF0, 0x90, 0xF0], // 6
-    [0xF0, 0x10, 0x20, 0x40, 0x40], // 7
-    [0xF0, 0x90, 0xF0, 0x90, 0xF0], // 8
-    [0xF0, 0x90, 0xF0, 0x10, 0xF0], // 9
-    [0xF0, 0x90, 0xF0, 0x90, 0x90], // A
-    [0xE0, 0x90, 0xE0, 0x90, 0xE0], // B
-    [0xF0, 0x80, 0x80, 0x80, 0xF0], // C
-    [0xE0, 0x90, 0x90, 0x90, 0xE0], // D
-    [0xF0, 0x80, 0xF0, 0x80, 0xF0], // E
-    [0xF0, 0x80, 0xF0, 0x80, 0x80], // F
+const INTERPRETER_SPRITES: [u8; 80] = [
+    0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+    0x20, 0x60, 0x20, 0x20, 0x70, // 1
+    0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+    0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+    0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+    0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+    0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+    0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+    0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+    0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+    0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+    0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+    0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+    0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+    0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+    0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 ];
 
 const START_ADDRESS: u16 = 0x200;
 
-const DISPLAY_MEM_WIDTH: usize = 64;
-const DISPLAY_MEM_HEIGHT: usize = 32;
+pub const DISPLAY_MEM_WIDTH: usize = 64;
+pub const DISPLAY_MEM_HEIGHT: usize = 32;
 
+#[derive(PartialEq, Debug)]
 pub struct Chip8Processor {
     // First, we set out the things as set out in the specification
     //  --- Memory ---
     // Interpreter + working ram
-    ram: [u8; 512], // A 4096 bytes ram, broken up in 8-bit (1 byte) chunks
+    ram: [u8; 4096], // A 4096 bytes ram, broken up in 8-bit (1 byte) chunks
     // Registers
     registers: [u8; 16], // 16 8-bit registers
     i_register: u16, // The 16-bit "i" register
@@ -50,10 +51,6 @@ pub struct Chip8Processor {
     //  --- Timers ---
     delay_timer: u8, // A decreasing 60Hz timer for game time
     sound_timer: u8, // A decreasing 60Hz timer for sounds
-    
-    // Now we add things that are not by specification, but needed in
-    // our implementation of the emulator
-    rng_thread: ThreadRng // An RNG thread used for random number generation
 }
 
 impl Chip8Processor {
@@ -63,7 +60,7 @@ impl Chip8Processor {
     /// Make a new Processor, ready for execution. 
     pub fn new() -> Self {
         let mut new_processor = Self {
-            ram: [0; 512], // The ram is empty
+            ram: [0; 4096], // The ram is empty
             registers: [0; 16], // The registers are empty
             i_register: 0,
             program_counter: START_ADDRESS, // Programs always start @ ram location 0x200
@@ -73,10 +70,9 @@ impl Chip8Processor {
             display: [false; DISPLAY_MEM_WIDTH * DISPLAY_MEM_HEIGHT], // The screen is completely off
             delay_timer: 0, // The timer is not set
             sound_timer: 0, // The sound timer is off
-            rng_thread: thread_rng() // Make a new rng thread for random number generation
         };
 
-        new_processor.ram[..80].copy_from_slice(&INTERPRETER_SPRITES.concat());
+        new_processor.ram[..80].copy_from_slice(&INTERPRETER_SPRITES);
 
         new_processor
     }
@@ -102,7 +98,10 @@ impl Chip8Processor {
         // Pop a value
         self.stack_ptr -= 1;
 
-        self.stack[self.stack_ptr as usize]
+        let result = self.stack[self.stack_ptr as usize];
+        self.stack[self.stack_ptr as usize] = 0;
+
+        result
     }
 
     /// Execute one Fetch-Decode-Execute cycle
@@ -121,6 +120,8 @@ impl Chip8Processor {
 
         let opcode = (high_byte << 8) | low_byte;
 
+        self.program_counter += 2;
+
         opcode
     }
 
@@ -130,7 +131,7 @@ impl Chip8Processor {
             self.delay_timer -= 1;
         }
 
-        if self.delay_timer > 0 {
+        if self.sound_timer > 0 {
             if self.sound_timer == 1 {
                 // Code that makes it beep
             }
@@ -157,23 +158,27 @@ impl Chip8Processor {
 
             // 1. 00E0 - CLS - Clear Display
             (0, 0, 0xE, 0) => {
+                println!("1");
                 self.display = [false; DISPLAY_MEM_WIDTH * DISPLAY_MEM_HEIGHT]
             },
 
             // 2. 00EE - Return from subroutine
             (0, 0, 0xE, 0xE) => {
+                println!("2");
                 let return_value = self.pop();
                 self.program_counter = return_value;
             },
 
             // 3. 1NNN - JMP NNN - Jump to location NNN
             (1, ..) => {
+                println!("3");
                 let nnn = opcode & 0xFFF;
                 self.program_counter = nnn;
             },
 
             // 4. 2NNN - CALL NNN - Call Subroutine @NNN
             (2, ..) => {
+                println!("4");
                 let nnn: u16 = opcode & 0xFFF;
                 self.push(self.program_counter); // This works because u16 is Copy
                 self.program_counter = nnn;
@@ -181,6 +186,7 @@ impl Chip8Processor {
 
             // 5. 3XNN - SKIP VX == NN - Skip ahead if
             (3, x, ..) => {
+                println!("5");
                 let nn = (opcode & 0xFF) as u8;
                 if self.registers[x as usize] == nn {
                     self.program_counter += 2; // 2 as we skip 2 bytes, so 1 opcode
@@ -189,6 +195,7 @@ impl Chip8Processor {
 
             // 6. 4XNN - SKIP VX != NN - Skip ahead if not
             (4, x, ..) => {
+                println!("6");
                 let nn = (opcode & 0xFF) as u8;
                 if self.registers[x as usize] != nn {
                     self.program_counter += 2; // 2 as we skip 2 bytes, so 1 opcode
@@ -197,6 +204,7 @@ impl Chip8Processor {
 
             // 7. 5XY0 - SKIP VX == VY - Skip ahead if X == Y
             (5, x, y, 0) => {
+                println!("7");
                 if self.registers[x as usize] == self.registers[y as usize] {
                     self.program_counter += 2; // 2 as we skip 2 bytes, so 1 opcode
                 }
@@ -204,12 +212,14 @@ impl Chip8Processor {
             
             // 8. 6XNN - VX = NN - Set register X to NN
             (6, x, ..) => {
+                println!("8");
                 let nn = opcode & 0xFF;
                 self.registers[x as usize] = nn as u8; 
             },
 
             // 9. 7XNN - VX + NN
             (7, x, ..) => {
+                println!("9");
                 // Rust could overflow here, but Chip8 expects the numbers to wrap
                 let nn = opcode & 0xFF;
                 
@@ -218,22 +228,25 @@ impl Chip8Processor {
 
             // 10. 8XY0 - VX = VY
             (8, x, y, 0) => {
+                println!("10");
                 self.registers[x as usize] = self.registers[y as usize];
             },
 
             // 11. 8XY1, 8XY2, 8XY3 - VX _ VY = VX, _ is OR, AND, XOR
             (8, x, y, n @ 1..=3) => {
+                println!("11");
                 let (x, y) = (x as usize, y as usize);
                 match n {
-                    1 => self.registers[x] |= self.registers[y],
-                    2 => self.registers[x] &= self.registers[y],
-                    3 => self.registers[x] ^= self.registers[y],
+                    0x1 => self.registers[x] |= self.registers[y],
+                    0x2 => self.registers[x] &= self.registers[y],
+                    0x3 => self.registers[x] ^= self.registers[y],
                     _ => panic!("This is impossible to reach.")
                 }
             },
 
             // 12. 8XY4 - ADD VX + VY  - If VX overflows, set VF to 1
             (8, x, y, 4) => {
+                println!("12");
                 let (x, y) = (x as usize, y as usize);
                 let (result, overflow) =
                     self.registers[x]
@@ -247,6 +260,7 @@ impl Chip8Processor {
 
             // 13. 8XY5 - SUB VX - VY
             (8, x, y, 5) => {
+                println!("13");
                 let (x, y) = (x as usize, y as usize);
                 let (result, underflow) =
                     self.registers[x]
@@ -260,6 +274,7 @@ impl Chip8Processor {
 
             // 14. 8XY6 - VX >>= 1 - Bitwise shift VX by 1, and store the dropped bit in VF
             (8, x, _, 6) => {
+                println!("14");
                 let x = x as usize;
                 
                 // The 1 here is inferred to be an u8, since it cannot be anything else.
@@ -272,6 +287,7 @@ impl Chip8Processor {
 
             // 15. 8XY7 - SUB VY - VX  - If VX underflows, clear VF
             (8, x, y, 7) => {
+                println!("15");
                 let (x, y) = (x as usize, y as usize);
                 let (result, underflow) =
                     self.registers[x]
@@ -285,6 +301,7 @@ impl Chip8Processor {
 
             // 16. 8XY6 - VX >>= 1 - Bitwise shift VX by 1, and store the dropped bit in VF
             (8, x, _, 0xE) => {
+                println!("16");
                 let x = x as usize;
                 
                 // Same as above, but we move the first digit to the last position,
@@ -297,6 +314,7 @@ impl Chip8Processor {
 
             // 17. 9XY0 - Skip if VX != VY
             (9, x, y, 0) => {
+                println!("17");
                 if self.registers[x as usize] != self.registers[y as usize] {
                     self.program_counter += 2; // 2 as we skip 2 bytes, so 1 opcode
                 }
@@ -304,6 +322,7 @@ impl Chip8Processor {
 
             // 18. ANNN - Set I to 0xNNN
             (0xA, ..) => {
+                println!("18");
                 let nnn: u16 = opcode & 0xFFF;
 
                 self.i_register = nnn;
@@ -311,21 +330,24 @@ impl Chip8Processor {
 
             // 19. BNNN - Jump to address V0 + NNN
             (0xB, ..) => {
+                println!("19");
                 let nnn: u16 = opcode & 0xFFF;
-                self.program_counter = self.registers[0x0] as u16 + nnn;
+                self.program_counter = self.registers[0] as u16 + nnn;
             },
 
             // 20. CXNN - Make a random number and AND it in VX
             (0xC, x, ..) => {
-                let random_num: u16 = self.rng_thread.gen();
-                let nn = opcode & 0xFF;
+                println!("20");
+                let random_num: u8 = random();
+                let nn = (opcode & 0xFF) as u8;
 
-                self.registers[x as usize] = (random_num & nn) as u8; 
+                self.registers[x as usize] = random_num & nn; 
             },
 
             // 21. DXYN - Draw n bytes from I at coordinates (VX, VY)
             // Set VF if any pixels were flipped by this action.
             (0xD, x, y, rows) => {
+                println!("21");
                 let coord_x = self.registers[x as usize] as u16;
                 let coord_y = self.registers[y as usize] as u16;
 
@@ -363,6 +385,7 @@ impl Chip8Processor {
 
             // 22. EX9E - Skip if the key indexed at VX is currently pressed
             (0xE, x, 9, 0xE) => {
+                println!("22");
                 if self.keypad[(self.registers[x as usize]) as usize] {
                     self.program_counter += 2
                 }
@@ -370,6 +393,7 @@ impl Chip8Processor {
 
             // 23. EXA1 - Skip if the key indexed at VX is currently unpressed
             (0xE, x, 0xA, 1) => {
+                println!("23");
                 if self.keypad[(self.registers[x as usize]) as usize] {
                     self.program_counter += 2
                 }
@@ -377,12 +401,14 @@ impl Chip8Processor {
 
             // 24. FX07 - Set VX to the delay timer
             (0xF, x, 0, 7) => {
+                println!("24");
                 self.registers[x as usize] = self.delay_timer;
             },
 
-            // 25. FX15 - Wait for any keypress. Store the keypress index in VX
+            // 25. FX0A - Wait for any keypress. Store the keypress index in VX
             // The CPU here stops until this is the case
             (0xF, x, 0, 0xA) => {
+                println!("25");
                 // I wanted to do this with a while loop, but the guide rightly 
                 // suggested re-doing the instruction instead, so that the
                 // `cycle` function can re-register new key presses.
@@ -405,21 +431,25 @@ impl Chip8Processor {
 
             // 26. FX15 - Set the delay timer to VX
             (0xF, x, 1, 5) => {
+                println!("26");
                 self.delay_timer = self.registers[x as usize];
             },
 
             // 27. FX18 - Set the sound timer to VX
             (0xF, x, 1, 8) => {
+                println!("27");
                 self.sound_timer = self.registers[x as usize];
             },
 
             // 28. FX1E - Set I to I + VX
             (0xF, x, 1, 0xE) => {
-                self.i_register += self.registers[x as usize] as u16;
+                println!("28");
+                self.i_register = self.i_register.wrapping_add(self.registers[x as usize] as u16);
             },
 
             // 29. FX29 - Set I to the position of the interpreter font character in VX
             (0xF, x, 2, 9) => {
+                println!("29");
                 // The sprites are all 5 bytes long, and start at location 0
                 // in our ram. Therefore, to get their position, we multiply
                 // their value (in the register) by 5, and get the corresponding
@@ -429,6 +459,7 @@ impl Chip8Processor {
 
             // 30. FX33 - Store the BCD encoding of VX into I
             (0xF, x, 3, 3) => {
+                println!("30");
                 // The BCD is a pseudo-decimal representation of a hex, stored
                 // as a series of hex values. For instance, 0x64, equal to 100,
                 // would become 0x1 (1), 0x0 (0), 0x0 (0), so three bytes, one
@@ -448,29 +479,31 @@ impl Chip8Processor {
 
             // 31. FX55 - Store V0 to VX into the RAM, starting from address I
             (0xF, x, 5, 5) => {
-                for i in 0..x {
+                println!("31");
+                for i in 0..=x {
                     self.registers[i as usize] = self.ram[(self.i_register + i) as usize];
                 }
             },
 
             // 32. FX65 - Fill V0 to VX with the RAM values starting from address I
             (0xF, x, 6, 5) => {
-                for i in 0..x {
+                println!("32");
+                for i in 0..=x {
                     self.ram[(self.i_register + i) as usize] = self.registers[i as usize];
                 }
             },
 
             // Catch-all 
-            (_, _, _, _) => unimplemented!("Unimplemented opcode: {}", opcode),
+            (_, _, _, _) => panic!("Unimplemented opcode: {}", opcode),
         }
     }
 
     /// Load a ROM into the RAM at the point of execution.
-    pub fn load_rom(&mut self, rom:Vec<u8>) {
+    pub fn load_rom(&mut self, rom:&[u8]) {
         // Load whatever ROM is given to us into the RAM
-        for (i, opcode) in rom.into_iter().enumerate() {
-            self.ram[START_ADDRESS as usize + i] = opcode;
-        }
+        let start = START_ADDRESS as usize;
+        let end = (START_ADDRESS as usize) + rom.len();
+        self.ram[start..end].copy_from_slice(&rom);
     }
 
     pub fn get_display(&self) -> &[bool] {
@@ -528,3 +561,5 @@ pub enum Chip8Key {
     K0, K1, K2, K3, K4, K5, K6, K7, K8, K9, KA, KB, KC, KD, KE, KF
 }
 
+#[cfg(test)]
+mod tests;
