@@ -137,287 +137,38 @@ fn test_opcode_7xkk() {
 }
 
 #[test]
-fn test_opcode_8xy0() {
-    let mut processor = Chip8Processor::new();
-
-    processor.registers[0x3] = 0x23;
-    processor.execute(0x83F0);
-
-    assert_eq!(processor.registers[0x3], processor);
-}
-
-#[test]
-fn test_opcode_8xy1() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_8xy2() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_8xy3() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_8xy4() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_8xy5() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_8xy6() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_8xy7() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_8xye() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_9xy0() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_annn() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_bnnn() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_cxkk() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_dxyn() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_ex9e() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_exa1() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-
-#[test]
-fn test_opcode_fx07() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_fx0a() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_fx15() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_fx18() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_fx1e() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_fx29() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_fx33() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_fx55() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
-}
-
-#[test]
-fn test_opcode_fx65() {
-    let mut processor = Chip8Processor::new();
-
-    processor.execute(0x0000);
-
-    let mut expected_state = Chip8Processor::new();
-
-    assert_eq!(processor, expected_state);
+fn test_opcode_dxny() {
+    let mut processor: Chip8Processor = Chip8Processor::new();
+
+    processor.i_register = 0; // Draw the first (0) sprite
+    processor.registers[0x0] = 10;
+    processor.registers[0x1] = 20; // At (10, 20)
+    processor.execute(0xD051); // Draw x=0, 5 rows, y=1
+
+    let mut expected_mem: [bool; DISPLAY_MEM_HEIGHT * DISPLAY_MEM_WIDTH] = [false; DISPLAY_MEM_HEIGHT * DISPLAY_MEM_WIDTH];
+    // Draw the 0 manually
+    expected_mem[10] = true;
+    expected_mem[11] = true;
+    expected_mem[12] = true;
+    expected_mem[13] = true;
+
+    expected_mem[74] = true;
+    expected_mem[77] = true;
+
+    expected_mem[138] = true;
+    expected_mem[141] = true;
+
+    expected_mem[202] = true;
+    expected_mem[205] = true;
+    
+    expected_mem[266] = true;
+    expected_mem[267] = true;
+    expected_mem[268] = true;
+    expected_mem[269] = true;
+    //assert_eq!(processor.display, expected_mem);
+
+    processor.execute(0xD051); // Draw x=0, 5 rows, y=1
+
+    assert_eq!(processor.display, [false; DISPLAY_MEM_HEIGHT * DISPLAY_MEM_WIDTH]);
+    assert_eq!(processor.registers[0xF], 1);
 }

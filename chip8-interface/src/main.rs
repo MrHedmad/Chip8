@@ -10,6 +10,8 @@ use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
+use std::thread::sleep;
+use std::time::Duration;
 
 const SCALE: u32 = 15;
 const WINDOW_WIDTH: u32 = (DISPLAY_MEM_WIDTH as u32) * SCALE;
@@ -76,6 +78,8 @@ fn main() {
         }
         processor.tick_timers();
         draw_screen(&processor, &mut canvas);
+        
+        sleep(Duration::from_millis(16));
     }
 
 }
@@ -93,7 +97,7 @@ fn draw_screen(processor: &Chip8Processor, canvas: &mut Canvas<Window>) {
         if *pixel {
             // Make the 1D array 2D. We get the coordinates of the pixel we are
             // iterating upon.
-            let x = (i % DISPLAY_MEM_HEIGHT) as u32;
+            let x = (i % DISPLAY_MEM_WIDTH) as u32;
             let y = (i / DISPLAY_MEM_WIDTH) as u32;
 
             let rectangle = Rect::new((x * SCALE) as i32, (y * SCALE) as i32, SCALE, SCALE);
